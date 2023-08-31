@@ -93,6 +93,13 @@
       "dependencies": {},
       "url": "https://packages.unity.com"
     },
+    "com.unity.nuget.newtonsoft-json": {
+      "version": "3.2.1",
+      "depth": 1,
+      "source": "registry",
+      "dependencies": {},
+      "url": "https://packages.unity.com"
+    },
     "com.unity.performance.profile-analyzer": {
       "version": "1.2.2",
       "depth": 1,
@@ -254,6 +261,16 @@
         "com.unity.xr.core-utils": "2.1.0"
       }
     },
+    "org.mixedrealitytoolkit.data": {
+      "version": "file:MixedReality/org.mixedrealitytoolkit.data-1.0.0-pre.18.tgz",
+      "depth": 0,
+      "source": "local-tarball",
+      "dependencies": {
+        "org.mixedrealitytoolkit.core": "3.0.0-pre.18",
+        "com.unity.nuget.newtonsoft-json": "2.0.2",
+        "com.unity.textmeshpro": "3.0.6"
+      }
+    },
     "org.mixedrealitytoolkit.input": {
       "version": "file:MixedReality/org.mixedrealitytoolkit.input-3.0.0-pre.18.tgz",
       "depth": 0,
@@ -296,6 +313,16 @@
         "org.mixedrealitytoolkit.spatialmanipulation": "3.0.0-pre.18",
         "org.mixedrealitytoolkit.standardassets": "3.0.0-pre.18",
         "com.unity.xr.interaction.toolkit": "2.3.0"
+      }
+    },
+    "org.mixedrealitytoolkit.uxcomponents.noncanvas": {
+      "version": "file:MixedReality/org.mixedrealitytoolkit.uxcomponents.noncanvas-3.0.0-pre.18.tgz",
+      "depth": 0,
+      "source": "local-tarball",
+      "dependencies": {
+        "org.mixedrealitytoolkit.uxcore": "3.0.0-pre.18",
+        "org.mixedrealitytoolkit.spatialmanipulation": "3.0.0-pre.18",
+        "org.mixedrealitytoolkit.standardassets": "3.0.0-pre.18"
       }
     },
     "org.mixedrealitytoolkit.uxcore": {
