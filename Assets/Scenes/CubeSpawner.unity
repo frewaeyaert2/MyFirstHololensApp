@@ -374,7 +374,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cubePrefab: {fileID: 6959292822181911330, guid: 486f067912d51bb48b8c33da871b0737, type: 3}
   parentObject: {fileID: 1168111597}
-  numberOfCubes: 2
+  numberOfCubes: 4
   spawnMaxX: 0.3
   spawnMaxY: 0.3
   spawnMaxZ: 0.3

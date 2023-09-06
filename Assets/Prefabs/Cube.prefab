@@ -15,7 +15,6 @@ GameObject:
   - component: {fileID: 3030226085837002532}
   - component: {fileID: 1501095640870472600}
   - component: {fileID: 8757245047257486619}
-  - component: {fileID: 5694551863557012172}
   m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
@@ -339,7 +338,7 @@ MonoBehaviour:
   <OnClicked>k__BackingField:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 5694551863557012172}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: CubSpawner, Assembly-CSharp
         m_MethodName: 
         m_Mode: 1
@@ -427,21 +426,3 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &5694551863557012172
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6959292822181911330}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d372d6f4e60186247a0382441c617f56, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  cubePrefab: {fileID: 0}
-  parentObject: {fileID: 0}
-  numberOfCubes: 10
-  spawnMaxX: 0.3
-  spawnMaxY: 0.3
-  spawnMaxZ: 0.3
