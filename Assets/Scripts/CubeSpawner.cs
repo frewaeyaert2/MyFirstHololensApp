@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using MixedReality.Toolkit;
 using MixedReality.Toolkit.UX;
+using UnityEngine.XR.Interaction.Toolkit;
 
 public class CubSpawner : MonoBehaviour
 {
     public GameObject cubePrefab;
+    public GameObject parentObject;
     public int numberOfCubes = 10;
     public float spawnMaxX = 0.3f;
     public float spawnMaxY = 0.3f;
@@ -15,64 +17,64 @@ public class CubSpawner : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        // Attach button click handler
-        GetComponent<StatefulInteractable>().OnClicked.AddListener(SpawnCube);
+        GetComponent<StatefulInteractable>().selectEntered.AddListener(SpawnMultipleCubes);
     }
 
-    private void SpawnCube()
+    private void SpawnMultipleCubes(SelectEnterEventArgs arg0)
+    {
+        for (int i = 0; i < numberOfCubes; i++)
+        {
+            SpawnCubeWithRetry();
+        }
+    }
+
+    void SpawnCubeWithRetry()
+    {
+        int attempts = 0;
+        while (attempts < 10)
+        {
+            Vector3 spawnPosition = GenerateRandomPositionNearButton();
+
+            if (!IsPositionOccupied(spawnPosition))
+            {
+                GameObject newCube = Instantiate(cubePrefab, spawnPosition, Quaternion.identity, parentObject.transform);
+                newCube.GetComponent<StatefulInteractable>().OnClicked.AddListener(() => FallDownCube(newCube));
+                break;
+            }
+
+            attempts++;
+        }
+
+        if (attempts == 10)
+        {
+            Debug.LogWarning("Failed to spawn cube after 10 attempts.");
+        }
+    }
+
+    Vector3 GenerateRandomPositionNearButton()
     {
         Vector3 buttonPosition = transform.position;
 
-        for (int i = 0; i < numberOfCubes; i++)
-        {
-            float randomX = Random.Range(-spawnMaxY, spawnMaxY);
-            float randomY = Random.Range(-spawnMaxY, spawnMaxY);
-            float randomZ = Random.Range(-spawnMaxZ, spawnMaxZ);
+        float randomX = Random.Range(-spawnMaxY, spawnMaxY);
+        float randomY = Random.Range(-spawnMaxY, spawnMaxY);
+        float randomZ = Random.Range(-spawnMaxZ, spawnMaxZ);
 
-            Vector3 spawnPosition = new Vector3(buttonPosition.x + randomX, buttonPosition.y + randomY, buttonPosition.z + randomZ);
-            Instantiate(cubePrefab, spawnPosition, Quaternion.identity);
-            cubePrefab.AddComponent<Rigidbody>(); // Add Rigidbody component for physics
-            cubePrefab.AddComponent<CubeInteractable>(); // Add custom script for interaction
-            //cubePrefab.GetComponent<StatefulInteractable>().OnClicked.AddListener(() => FallDownCube(cubePrefab));
-        }
-
+        return new Vector3(buttonPosition.x + randomX, buttonPosition.y + randomY, buttonPosition.z + randomZ);
     }
 
-    public void UpdateSpawnRate(float value)
+    bool IsPositionOccupied(Vector3 position)
     {
-        // Update the spawn rate logic here
-        // Update spawnRateText.text with value.ToString("F2")
+        float cubeSize = 0.1f;
+        Collider[] hitColliders = Physics.OverlapBox(position, new Vector3(cubeSize / 2, cubeSize / 2, cubeSize / 2));
+        return hitColliders.Length > 0;
     }
 
-    // Update is called once per frame
-    void Update()
+    public void FallDownCube(GameObject cube)
     {
-        
-    }
-}
-
-
-public class CubeInteractable : StatefulInteractable
-{
-    private Rigidbody rb;
-
-    void Start()
-    {
-        GetComponent<StatefulInteractable>().OnClicked.AddListener(FallDownCube);
-        rb = GetComponent<Rigidbody>();
+        Rigidbody rb = cube.GetComponent<Rigidbody>();
         if (rb != null)
         {
-            rb.useGravity = false; // Disable gravity initially
+            rb.useGravity = true;
         }
     }
-
-    public void FallDownCube()
-    {
-        if (rb != null)
-        {
-            rb.useGravity = true; // Enable gravity when clicked
-        }
-    }
-
-    // Implement other IMixedRealityPointerHandler methods as needed
 }
