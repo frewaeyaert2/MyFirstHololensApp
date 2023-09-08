@@ -5,7 +5,7 @@ using MixedReality.Toolkit;
 using MixedReality.Toolkit.UX;
 using UnityEngine.XR.Interaction.Toolkit;
 
-public class CubeSpawner : MonoBehaviour
+public class CubeSpawnerExtended : MonoBehaviour
 {
     public GameObject cubePrefab;
     public GameObject parentObject;
@@ -13,27 +13,71 @@ public class CubeSpawner : MonoBehaviour
     public float spawnMaxX = 0.3f;
     public float spawnMaxY = 0.3f;
     public float spawnMaxZ = 0.3f;
+    private bool isSpawning = false;
+    private Coroutine spawnRoutine;
 
     // Start is called before the first frame update
     void Start()
     {
-        GetComponent<StatefulInteractable>().selectEntered.AddListener(SpawnMultipleCubes);
+        //GetComponent<StatefulInteractable>().selectEntered.AddListener(SpawnMultipleCubes);
+
+        //StartCoroutine(SpawnCubesContinuously());
+
     }
+
+    void Update()
+    {
+        // Optioneel: Je kunt hier een tijdelijke knop maken voor het testen.
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            ToggleSpawning();
+        }
+    }
+
+    public void ToggleSpawning()
+    {
+        if (isSpawning)
+        {
+            if (spawnRoutine != null)
+            {
+                StopCoroutine(spawnRoutine);
+            }
+            isSpawning = false;
+        }
+        else
+        {
+            spawnRoutine = StartCoroutine(SpawnCubesContinuously());
+            isSpawning = true;
+        }
+    }
+
 
     private void SpawnMultipleCubes(SelectEnterEventArgs arg0)
     {
         for (int i = 0; i < numberOfCubes; i++)
         {
-            SpawnCubeWithRetry();
+            SpawnCubeWithRetry(GenerateRandomPositionNearButton());
         }
     }
 
-    void SpawnCubeWithRetry()
+    IEnumerator SpawnCubesContinuously()
+    {
+        while (true)
+        {
+            for (int i = 0; i < numberOfCubes; i++)
+            {
+                SpawnCubeWithRetry(GenerateRandomPositionNearCanvas());
+            }
+            yield return new WaitForSeconds(3f); // Wacht 1 seconde voordat je opnieuw kubussen genereert
+        }
+    }
+
+    void SpawnCubeWithRetry(Vector3 spawnPosition)
     {
         int attempts = 0;
         while (attempts < 10)
         {
-            Vector3 spawnPosition = GenerateRandomPositionNearButton();
+            //Vector3 spawnPosition = GenerateRandomPositionNearButton();
 
             if (!IsPositionOccupied(spawnPosition))
             {
@@ -52,6 +96,17 @@ public class CubeSpawner : MonoBehaviour
     }
 
     Vector3 GenerateRandomPositionNearButton()
+    {
+        Vector3 buttonPosition = transform.position;
+
+        float randomX = Random.Range(-spawnMaxY, spawnMaxY);
+        float randomY = Random.Range(-spawnMaxY, spawnMaxY);
+        float randomZ = Random.Range(-spawnMaxZ, spawnMaxZ);
+
+        return new Vector3(buttonPosition.x + randomX, buttonPosition.y + randomY, buttonPosition.z + randomZ);
+    }
+
+    Vector3 GenerateRandomPositionNearCanvas()
     {
         Vector3 buttonPosition = transform.position;
 
