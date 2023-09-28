@@ -1,62 +1,86 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using MixedReality.Toolkit;
 using MixedReality.Toolkit.UX;
 using UnityEngine.XR.Interaction.Toolkit;
+using TMPro;
 
 public class CubeSpawnerExtended : MonoBehaviour
 {
+    [Header("Prefabs and Objects")]
     public GameObject cubePrefab;
-    public GameObject parentObject;
-    public int numberOfCubes = 10;
-    public float spawnMaxX = 0.3f;
-    public float spawnMaxY = 0.3f;
-    public float spawnMaxZ = 0.3f;
-    private bool isSpawning = false;
+    public Camera hololensCamera;
+    public Slider mySlider;
+    private TextMeshPro textObject;
+
+    [Header("Spawn Settings")]
+    private int numberOfCubes = 5;
     private Coroutine spawnRoutine;
 
-    // Start is called before the first frame update
-    void Start()
+    private void Awake()
     {
-        //GetComponent<StatefulInteractable>().selectEntered.AddListener(SpawnMultipleCubes);
+        SetupSlider();
+        SetupTextObject();
+    }
 
-        //StartCoroutine(SpawnCubesContinuously());
+    private void SetupSlider()
+    {
+        if (mySlider == null)
+        {
+            Debug.LogError("Slider component not found!");
+            return;
+        }
+        mySlider.OnValueUpdated.AddListener(UpdateNumberOfCubes);
+    }
 
+    private void SetupTextObject()
+    {
+        textObject = GameObject.Find("txtNumberOfCubes")?.GetComponent<TextMeshPro>();
+
+        if (textObject == null)
+        {
+            Debug.LogError("TextMeshPro object not found!");
+            return;
+        }
+        UpdateTextObject(mySlider.Value);
+    }
+
+    private void UpdateNumberOfCubes(SliderEventData eventData)
+    {
+        numberOfCubes = Mathf.RoundToInt(eventData.NewValue);
+        UpdateTextObject(eventData.NewValue);
+    }
+
+    private void UpdateTextObject(float value)
+    {
+        textObject.text = value.ToString("F0") + " cubes";
     }
 
     void Update()
     {
-        // Optioneel: Je kunt hier een tijdelijke knop maken voor het testen.
         if (Input.GetKeyDown(KeyCode.T))
         {
-            ToggleSpawning();
+            ToggleSpawning(true);
         }
     }
 
-    public void ToggleSpawning()
+    public void ToggleSpawning(bool isToggled)
     {
-        if (isSpawning)
+        if (!isToggled)
         {
-            if (spawnRoutine != null)
-            {
-                StopCoroutine(spawnRoutine);
-            }
-            isSpawning = false;
+            StopCurrentSpawningRoutine();
         }
         else
         {
             spawnRoutine = StartCoroutine(SpawnCubesContinuously());
-            isSpawning = true;
         }
     }
 
-
-    private void SpawnMultipleCubes(SelectEnterEventArgs arg0)
+    private void StopCurrentSpawningRoutine()
     {
-        for (int i = 0; i < numberOfCubes; i++)
+        if (spawnRoutine != null)
         {
-            SpawnCubeWithRetry(GenerateRandomPositionNearButton());
+            StopCoroutine(spawnRoutine);
         }
     }
 
@@ -66,55 +90,52 @@ public class CubeSpawnerExtended : MonoBehaviour
         {
             for (int i = 0; i < numberOfCubes; i++)
             {
-                SpawnCubeWithRetry(GenerateRandomPositionNearCanvas());
+                SpawnCubeWithRetry(GeneratePositionInFrontOfCamera());
             }
-            yield return new WaitForSeconds(3f); // Wacht 1 seconde voordat je opnieuw kubussen genereert
+            yield return new WaitForSeconds(3f);
         }
     }
 
     void SpawnCubeWithRetry(Vector3 spawnPosition)
     {
-        int attempts = 0;
-        while (attempts < 10)
+        int maxAttempts = 10;
+        for (int i = 0; i < maxAttempts; i++)
         {
-            //Vector3 spawnPosition = GenerateRandomPositionNearButton();
-
             if (!IsPositionOccupied(spawnPosition))
             {
-                GameObject newCube = Instantiate(cubePrefab, spawnPosition, Quaternion.identity, parentObject.transform);
-                newCube.GetComponent<StatefulInteractable>().OnClicked.AddListener(() => FallDownCube(newCube));
-                break;
+                SpawnCube(spawnPosition);
+                return;
             }
-
-            attempts++;
         }
+        Debug.LogWarning("Failed to spawn cube after 10 attempts.");
+    }
 
-        if (attempts == 10)
+    void SpawnCube(Vector3 position)
+    {
+        GameObject newCube = Instantiate(cubePrefab, position, Quaternion.identity);
+        newCube.GetComponent<StatefulInteractable>().OnClicked.AddListener(() => FallDownCube(newCube));
+    }
+
+    Vector3 GeneratePositionInFrontOfCamera()
+    {
+        if (!hololensCamera)
         {
-            Debug.LogWarning("Failed to spawn cube after 10 attempts.");
+            Debug.LogError("Hololens camera not set.");
+            return Vector3.zero;
         }
-    }
 
-    Vector3 GenerateRandomPositionNearButton()
-    {
-        Vector3 buttonPosition = transform.position;
+        // Random vertical offset between -40 and 40 cm above the camera's position for eye height
+        float yOffset = Random.Range(-0.4f, 0.4f);
+        // Random horizontal offset, either to the left or right, between -2 and 2m
+        float xOffset = Random.Range(-2f, 2f);
+        // Random distance in front of the camera between 0 and 2m
+        float zOffset = Random.Range(0f, 2f);
 
-        float randomX = Random.Range(-spawnMaxY, spawnMaxY);
-        float randomY = Random.Range(-spawnMaxY, spawnMaxY);
-        float randomZ = Random.Range(-spawnMaxZ, spawnMaxZ);
+        Vector3 spawnPosition = hololensCamera.transform.position + hololensCamera.transform.forward * zOffset;
+        spawnPosition.y += yOffset;
+        spawnPosition.x += xOffset;
 
-        return new Vector3(buttonPosition.x + randomX, buttonPosition.y + randomY, buttonPosition.z + randomZ);
-    }
-
-    Vector3 GenerateRandomPositionNearCanvas()
-    {
-        Vector3 buttonPosition = transform.position;
-
-        float randomX = Random.Range(-spawnMaxY, spawnMaxY);
-        float randomY = Random.Range(-spawnMaxY, spawnMaxY);
-        float randomZ = Random.Range(-spawnMaxZ, spawnMaxZ);
-
-        return new Vector3(buttonPosition.x + randomX, buttonPosition.y + randomY, buttonPosition.z + randomZ);
+        return spawnPosition;
     }
 
     bool IsPositionOccupied(Vector3 position)
