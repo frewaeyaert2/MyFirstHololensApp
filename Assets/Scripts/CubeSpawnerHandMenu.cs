@@ -5,13 +5,13 @@ using MixedReality.Toolkit.UX;
 using UnityEngine.XR.Interaction.Toolkit;
 using TMPro;
 
-public class CubeSpawnerExtended : MonoBehaviour
+public class CubeSpawnerHandMenu : MonoBehaviour
 {
     [Header("Prefabs and Objects")]
     public GameObject cubePrefab;
     public Camera hololensCamera;
     public Slider mySlider;
-    private TextMeshPro textObject;
+    private TextMeshProUGUI textObject;
 
     [Header("Spawn Settings")]
     private int numberOfCubes = 5;
@@ -35,11 +35,11 @@ public class CubeSpawnerExtended : MonoBehaviour
 
     private void SetupTextObject()
     {
-        textObject = GameObject.Find("txtNumberOfCubes")?.GetComponent<TextMeshPro>();
+        textObject = GameObject.Find("txtNumberOfCubes").GetComponent<TextMeshProUGUI>();
 
         if (textObject == null)
         {
-            Debug.LogError("TextMeshPro object not found!");
+            Debug.LogError("TextMeshProUGUI object not found!");
             return;
         }
         UpdateTextObject(mySlider.Value);
@@ -113,7 +113,7 @@ public class CubeSpawnerExtended : MonoBehaviour
     void SpawnCube(Vector3 position)
     {
         GameObject newCube = Instantiate(cubePrefab, position, Quaternion.identity);
-        //newCube.GetComponent<StatefulInteractable>().OnClicked.AddListener(() => FallDownCube(newCube));
+        newCube.GetComponent<StatefulInteractable>().OnClicked.AddListener(() => FallDownCube(newCube));
     }
 
     Vector3 GeneratePositionInFrontOfCamera()
